@@ -1,0 +1,10 @@
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# Arquivos
+src/main/java/MainPackage/FireBaseAuth.java
+tokensgoogle/StoredCredential
+src/main/resources/*.json

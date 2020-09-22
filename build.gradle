@@ -1,0 +1,43 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'MainPackage.Login'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+if (!hasProperty('mainClass')) {
+    ext.mainClass = 'MainPackage.Login'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'MainPackage.Login'
+    }
+}
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Quickstart', 'Implementation-Version': '3.4.0'
+        attributes 'Main-Class': 'MainPackage.Login'
+    }
+}
+
+dependencies {
+    compile 'com.google.api-client:google-api-client:1.23.0'
+    compile 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
+    compile 'com.google.apis:google-api-services-calendar:v3-rev401-1.25.0'
+    compile 'com.google.firebase:firebase-admin:6.11.0'
+    compile group:'com.toedter', name: 'jcalendar', version: '1.4'
+    compile group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.7.0'
+    compile group: 'com.jidesoft', name: 'jide-oss', version: '2.4.8'
+    implementation group: "com.twilio.sdk", name: "twilio", version: "7.54.0"
+    compile 'commons-validator:commons-validator:1.4.1'
+    compile group: 'org.jfree', name: 'jfreechart', version: '1.5.0'
+}

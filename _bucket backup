@@ -1,0 +1,65 @@
+gcloud config set project fisioapp-9cfc0
+
+//criar o bucket
+gsutil mb -p fisioapp-9cfc0 -c NEARLINE -l us-east1 -b on gs://fisioapp/
+ 
+ //exportar
+gcloud firestore export gs://fisioapp/ExportedFiles/Firestore
+ 
+//importar
+gcloud firestore import gs://fisioapp/ExportedFiles/Firestore
+
+//importar especifico
+gcloud firestore import gs://fisioapp/ExportedFiles/Auto --collection-ids=salas,[COLLECTION_ID_2]
+
+//função para importar automaticamente
+//const functions = require('firebase-functions');
+//backup automatio
+const firestore = require('@google-cloud/firestore');
+const client = new firestore.v1.FirestoreAdminClient();
+const projid = 'fisioapp-9cfc0';
+const bucket = 'gs://fisioapp/ExportedFiles/Auto';
+var moment = require('moment');
+var created = moment().format('ddmmyyy');
+
+exports.bupFirestoreAtuo = functions.pubsub
+                                            .schedule('every 24 hours')
+                                            .onRun((context) => {
+  const databaseName =
+    client.databasePath(projid, '(default)');
+
+  return client.exportDocuments({
+    name: databaseName,
+    outputUriPrefix: bucket + created,
+    collectionIds: ['agendamentos','confirmacoes','entradas','evolucaodiaria','fornecedores','funcionarios','pacientes','pacotes','procedimentos','saidas','salas']
+    })
+  .then(responses => {
+    const response = responses[0];
+    console.log(`Operation Name: ${response['name']}`);
+    return response;
+  })
+  .catch(err => {
+    console.error(err);
+    throw new Error('Export operation failed');
+  });
+});
+
+//permissões
+gcloud projects add-iam-policy-binding fisioapp-9cfc0 \
+    --member serviceAccount:fisioapp-9cfc0@appspot.gserviceaccount.com \
+    --role roles/datastore.importExportAdmin
+    
+gsutil iam ch serviceAccount:PROJECT_ID@appspot.gserviceaccount.com:admin \
+    gs://gs://fisioapp/ExportedFiles/Auto
+ 
+//console google
+https://console.cloud.google.com/home/dashboard?cloudshell=true&hl=pt-br&project=projeto24022020
+
+//jobs google cloud
+https://console.cloud.google.com/cloudscheduler?project=fisioapp-9cfc0&authuser=0&jobs-tablequery=%255B%257B%2522k%2522%253A%2522name%2522%252C%2522t%2522%253A10%252C%2522v%2522%253A%2522firebase-schedule-bupFirestoreAtuo-us-central1%2522%252C%2522s%2522%253Atrue%257D%255D
+
+//listar o bucket
+gsutil ls gs://fisioapp/ExportedFiles/
+
+//checar se backup foi realizado
+gsutil ls -L -b gs://fisioapp/ExportedFiles/Auto12082020
